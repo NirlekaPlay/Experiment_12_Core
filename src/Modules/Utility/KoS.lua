@@ -2,147 +2,143 @@
 -- Nirleka Dev
 -- March 31, 2024
 
-
 local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
+
+local function getPlayerDataModel(target)
+	if target then
+		if type(target) == "string" then
+			for _, p in pairs(Players:GetChildren()) do
+				if p.Name == target or p.DisplayName == target then
+					return p
+				end
+			end
+		elseif type(target) == "number" then
+			for _, p in pairs(Players:GetChildren()) do
+				if p:IsA("Player") and p.UserId == target then
+					return p
+				end
+			end
+		elseif target:IsA("Model") then
+			for _, p in pairs(Players:GetChildren()) do
+				if p.Name == target.Name or p.DisplayName == target.Name then
+					return p
+				end
+			end
+		elseif target:IsA("Player") then
+			return target
+		end
+	end
+end
 
 local KoS = {}
 KoS.__index = KoS
 
 function KoS.new(highlightFillColor, highlightOutlineColor, pointLightColor)
-    local self = setmetatable({}, KoS)
+	local self = setmetatable({}, KoS)
 
-    self.Players = {}
-
-    self._defaultHighlightName = "KoS_Highlight"
-    self._defaultPointLightName = "KoS_PointLight"
-
-    self.HighlightFillColor = highlightFillColor or Color3.fromRGB(255, 0, 0)
+	self.Players = {}
+	self._defaultHighlightName = "KoS_Highlight"
+	self._defaultPointLightName = "KoS_PointLight"
+	self.HighlightFillColor = highlightFillColor or Color3.fromRGB(255, 0, 0)
 	self.HighlightOutlineColor = highlightOutlineColor or Color3.fromRGB(255, 0, 0)
 	self.PointLightColor = pointLightColor or Color3.fromRGB(255, 0, 0)
 
-    return self
+	return self
 end
 
 function KoS:GetPlayers()
-    return self.Players
+	return self.Players
 end
 
-function KoS:GetPlayer(player)
-    for i, v in pairs(self.Players) do
-        if v.name == player then
-            return {
-                name = v.name,
-                index = i
-            }
-        else
-            return nil
-        end
-    end
+function KoS:GetPlayer(target)
+	local player = getPlayerDataModel(target)
+	
+	for i, p in ipairs(self.Players) do
+		if p.player == player then
+			return p
+		end
+	end
 end
 
 function KoS:Assert(target, reason)
-    local player 
+	local player = getPlayerDataModel(target)
+	if player then
+		if self:GetPlayer(player) then
+			return
+		end
 
-    if type(target == "string") then
-        if Players[target] then
-            player = target
-        end
-    elseif type(target == "number") then
-        for _, p in pairs(Players) do
-            if p:IsA("Player") then
-                if p.UserId == target then
-                    player = p.Name
-                end
-            end
-        end
-    elseif target:IsA("Model") then
-        if Players[target.Name] then
-            player = target.Name
-        end
-    end
+		local playerData = {
+			player = player,
+			reason = reason
+		}
+		table.insert(self.Players, playerData)
 
-    if self:GetPlayer(player) then return end
-
-    local playerData = {
-        name = player,
-        reason = reason
-    }
-    table.insert(playerData, self.Players)
-
-    return playerData
+		return playerData
+	end
 end
 
 function KoS:Lift(target)
-    local get = self:GetPlayer()
-    if get then
-        table.remove(get.name, get.index)
-    end
+	local get = self:GetPlayer(target)
+	if get then
+		table.remove(self.Players, get.index)
+	end
 end
 
 function KoS:InsertHighlight(target)
-    local playerCharacter 
-    if self:GetPlayer(target) then
-        local character = Workspace[target]
-        if character then
-            playerCharacter = character
-        end
-    end
+	local player = getPlayerDataModel(target)
+	local getPlayer = self:GetPlayer(player)
+	local playerCharacter = getPlayer and player.Character
 
-    local highlight = playerCharacter:FindFirstChild(self._defaultHighlightName)
-    if highlight then
-        return
-    else
-        local newHighlight = Instance.new("Highlight")
-		newHighlight.Name = self._defaultHighlightName
-		newHighlight.FillColor = self.HighlightFillColor
-		newHighlight.OutlineColor = self.HighlightOutlineColor
-		newHighlight.FillTransparency = 0.5
-		newHighlight.Enabled = true
-		newHighlight.Parent = playerCharacter
-    end
+	if not playerCharacter then
+		return
+	end
 
-    local torso = playerCharacter:FindFirstChild("Torso")
-    if not torso then
-        return
-    else
-        local pointLight = torso:FindFirstChild(self._defaultPointLightName)
-        if pointLight then
-            return
-        else
-            local newLight = Instance.new("PointLight")
-            newLight.Name = self._defaultPointLightName
-            newLight.Color = self.PointLightColor
-            newLight.Range = 8
-            newLight.Brightness = 3
-            newLight.Parent = torso
-        end
-    end
+	local highlight = playerCharacter:FindFirstChild(self._defaultHighlightName)
+	if not highlight then
+		highlight = Instance.new("Highlight")
+		highlight.Name = self._defaultHighlightName
+		highlight.FillColor = self.HighlightFillColor
+		highlight.OutlineColor = self.HighlightOutlineColor
+		highlight.FillTransparency = 0.5
+		highlight.Enabled = true
+		highlight.Parent = playerCharacter
+	end
+
+	local torso = playerCharacter:FindFirstChild("Torso")
+	if torso then
+		local pointLight = torso:FindFirstChild(self._defaultPointLightName)
+		if not pointLight then
+			pointLight = Instance.new("PointLight")
+			pointLight.Name = self._defaultPointLightName
+			pointLight.Color = self.PointLightColor
+			pointLight.Range = 8
+			pointLight.Brightness = 3
+			pointLight.Parent = torso
+		end
+	end
 end
 
 function KoS:DestroyHighlight(target)
-    local playerCharacter 
-    if self:GetPlayer(target) then
-        local character = Workspace[target]
-        if character then
-            playerCharacter = character
-        end
-    end
+	local player = getPlayerDataModel(target)
+	local getPlayer = self:GetPlayer(player)
+	local playerCharacter = getPlayer and player.Character
 
-    local highlight = playerCharacter:FindFirstChild(self._defaultHighlightName)
-    if highlight then
-        highlight:Destroy()
-    end
+	if not playerCharacter then
+		return
+	end
 
-    local torso = playerCharacter:FindFirstChild("Torso")
-    if not torso then
-        return
-    else
-        local pointLight = torso:FindFirstChild(self._defaultPointLightName)
-        if pointLight then
-            pointLight:Destroy()
-        end
-    end
+	local highlight = playerCharacter:FindFirstChild(self._defaultHighlightName)
+	if highlight then
+		highlight:Destroy()
+	end
+
+	local torso = playerCharacter:FindFirstChild("Torso")
+	if torso then
+		local pointLight = torso:FindFirstChild(self._defaultPointLightName)
+		if pointLight then
+			pointLight:Destroy()
+		end
+	end
 end
 
 return KoS
