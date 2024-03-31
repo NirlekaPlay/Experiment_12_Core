@@ -120,4 +120,29 @@ function KoS:InsertHighlight(target)
     end
 end
 
+function KoS:DestroyHighlight(target)
+    local playerCharacter 
+    if self:GetPlayer(target) then
+        local character = Workspace[target]
+        if character then
+            playerCharacter = character
+        end
+    end
+
+    local highlight = playerCharacter:FindFirstChild(self._defaultHighlightName)
+    if highlight then
+        highlight:Destroy()
+    end
+
+    local torso = playerCharacter:FindFirstChild("Torso")
+    if not torso then
+        return
+    else
+        local pointLight = torso:FindFirstChild(self._defaultPointLightName)
+        if pointLight then
+            pointLight:Destroy()
+        end
+    end
+end
+
 return KoS
