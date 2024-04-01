@@ -4,16 +4,6 @@
 
 local Math = {}
 
-function Math.CalculateArea(b, h, r)
-    if b and h then
-        return b * h
-    elseif not b and h then
-        if r then
-            return math.pi * r * r
-        end
-    end
-end
-
 function Math.RandomPointOnPlane(position, size)
     local x = position.X
     local z = position.Z
@@ -28,7 +18,7 @@ function Math.RandomPointOnPlane(position, size)
     return randomPosition
 end
 
-function Math.GetRandomUnitVector()
+function Math.GoldenRatioSphere()
 	local goldenRatio = (1 + math.sqrt(5)) / 2
 	local angleIncrement = math.pi * 2 * goldenRatio
 
@@ -42,6 +32,40 @@ function Math.GetRandomUnitVector()
 	return Vector3.new(x, y, z)
 end
 
+function Math.qFibonacciSphere(samples)
+    samples = samples or 1000
+    local points = {}
+    local phi = math.pi * (math.sqrt(5) - 1) 
 
+    for i = 1, samples do
+        local y = 1 - (i / (samples - 1)) * 2  
+        local radius = math.sqrt(1 - y * y)  
+
+        local theta = phi * i  
+
+        local x = math.cos(theta) * radius
+        local z = math.sin(theta) * radius
+
+        table.insert(points, {x, y, z})
+    end
+
+    return points
+end
+
+function Math.FibonacciSphere(samples)
+    samples = samples or 1000
+    local points = {}
+    local phi = math.pi * (math.sqrt(5) - 1) 
+ 
+    local y = 1 - (2 / (math.random())) * 2  
+    local radius = math.sqrt(1 - y * y)  
+
+    local theta = phi * i  
+
+    local x = math.cos(theta) * radius
+    local z = math.sin(theta) * radius
+
+    return Vector3.new(x, y, z)
+end
 
 return Math
