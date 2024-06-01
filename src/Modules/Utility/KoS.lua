@@ -36,7 +36,7 @@
             KoS:Assert("NirlekaPlay", "Menace to society")
             KoS:Lift("NirlekaPlay")
 	
---]]
+]]--
 
 local Players = game:GetService("Players")
 
