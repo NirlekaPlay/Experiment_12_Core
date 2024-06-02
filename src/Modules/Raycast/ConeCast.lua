@@ -1,36 +1,37 @@
 -- ConeCast
--- Nirleka Dev / walterrellisfun
--- April 1, 2024 
-
-local Physics = require("PhysicsModule")
-local Vector3 = require("Vector3Module")
+-- Nirleka Dev 
+-- June 1, 2024 
 
 local Workspace = game:GetService("Workspace")
 
-local ConeCastExtension = {}
+local ConePointDistribution = require("Math")
 
-function ConeCastExtension.ConeCastAll(origin, maxRadius, direction, maxDistance, coneAngle)
-    local sphereCastHits = Workspace:Spherecast(origin, Vector3.new(0, 0, maxRadius), direction * maxDistance)
-    local coneCastHitList = {}
-    if #sphereCastHits > 0 then
-        for i, hit in ipairs(sphereCastHits) do
-            -- Assuming a way to access and modify the color of the material of the hit object
-            -- This part is highly dependent on how the game objects and rendering are handled in the Lua environment
-            if hit:IsA("Part") or hit:IsA("MeshPart") then
-                hit.Color3 = Color3.new(1, 0, 0)
-            end
-            local hitPoint = hit.point
-            local directionToHit = Vector3.Subtract(hitPoint, origin)
-            local angleToHit = Vector3:Angle(direction, directionToHit)
-            if angleToHit < coneAngle then
-                table.insert(coneCastHitList, hit)
-            end
-        end
+local ConeCast = {}
+
+function ConeCast.Cast(origin, distance, edgeSize, numPoints)
+    local points = ConePointDistribution.ConePointDistribution(origin, distance, edgeSize, numPoints)
+    local hits = {}
+    local totalHits = 0
+
+    for _, point in ipairs(points) do
+        local ray = Ray.new(point, Vector3.new(point.X, point.Y, point.Z) * edgeSize)
+		local raycastParams = RaycastParams.new()
+
+		local result = Workspace:Raycast(ray.Origin, ray.Direction, raycastParams)
+
+        if result then
+			totalHits = totalHits + 1
+		end
     end
-    return coneCastHitList
+
+    if totalHits <= 0 then
+		return hits
+	end
+
+	return hits
 end
 
-return ConeCastExtension
+return ConeCast
 
 --[[
     -- Lua does not have a direct equivalent of RaycastHit, Physics, or Vector3 from Unity.

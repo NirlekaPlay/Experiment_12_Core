@@ -73,4 +73,19 @@ function Math.rFibonacciSphere(samples)
 	return points
 end
 
+function Math.ConePointDistribution(origin, distance, edgeSize, numPoints)
+	local points = {}
+
+	for i = 0, numPoints - 1 do
+		local angle = (2 * math.pi * i) / numPoints
+		local x = edgeSize * math.cos(angle)
+		local y = distance
+		local z = edgeSize * math.sin(angle)
+		local point = origin + Vector3.new(x, y, z)
+		table.insert(points, point)
+	end
+
+	return points
+end
+
 return Math

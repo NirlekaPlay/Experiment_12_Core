@@ -7,7 +7,7 @@ local Math = require("Math")
 
 local SphereCast = {}
 
-function SphereCast.Search(point, radius, rayCount)
+function SphereCast.Cast(point, radius, rayCount)
 	local hits = {}
 	local totalHits = 0
 	
