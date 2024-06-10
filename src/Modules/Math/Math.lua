@@ -88,4 +88,31 @@ function Math.ConePointDistribution(origin, distance, edgeSize, numPoints)
 	return points
 end
 
+function Math.CollatzConjecture(n)
+    while n > 1 do
+        if n % 2 == 0 then
+            n = n / 2
+        else
+            n = 3 * n + 1
+        end
+        print(n)
+    end
+end
+
+function Math.IsEven(n)
+	if n % 2 == 0 then
+        return true
+    else
+        return false
+    end
+end
+
+function Math.IsOdd(n)
+	if n % 2 ~= 0 then
+        return true
+    else
+        return false
+    end
+end
+
 return Math
